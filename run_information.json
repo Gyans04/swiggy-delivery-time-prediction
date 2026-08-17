@@ -1,0 +1,5 @@
+{
+    "run_id": "7a248d7fb70747d9a07be6a72f154219",
+    "artifact_path": "file:C:/Users/gyans/Desktop/swiggy-delivery-prediction/mlruns/1/7a248d7fb70747d9a07be6a72f154219/artifacts",
+    "model_name": "delivery_time_pred_model"
+}

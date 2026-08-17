@@ -1,0 +1,14 @@
+Data_Preparation:
+  test_size: 0.20
+  random_state: 42
+
+Train:
+  Random_Forest:
+    n_estimators: 100
+    max_depth: 10
+    random_state: 42
+  LightGBM:
+    n_estimators: 100
+    max_depth: 10
+    learning_rate: 0.1
+    random_state: 42
