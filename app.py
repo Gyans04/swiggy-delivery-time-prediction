@@ -3,18 +3,13 @@ from pydantic import BaseModel
 from sklearn.pipeline import Pipeline
 import uvicorn
 import pandas as pd
-import mlflow
 import json
 import joblib
-from mlflow import MlflowClient
 from sklearn import set_config
 from scripts.data_clean_utils import perform_data_cleaning
 
 # set the output as pandas
 set_config(transform_output='pandas')
-
-# --- LOCAL MLflow tracking — must match evaluation.py / register_model.py ---
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
 
 
 class Data(BaseModel):
@@ -63,24 +58,16 @@ nominal_cat_cols = ['weather', 'type_of_order', 'type_of_vehicle',
 
 ordinal_cat_cols = ["traffic", "distance_type"]
 
-# mlflow client
-client = MlflowClient()
-
-# load the model info to get the model name
-model_name = load_model_information("run_information.json")['model_name']
-
-# stage of the model — set to Staging since that's where register_model.py pushed it
-stage = "Staging"
-
-# get the latest model version
-latest_model_ver = client.get_latest_versions(name=model_name, stages=[stage])
-print(f"Latest model in {stage} is version {latest_model_ver[0].version}")
-
-# load model path
-model_path = f"models:/{model_name}/{stage}"
-
-# load the latest model from model registry
-model = mlflow.sklearn.load_model(model_path)
+# --- Load model directly from the saved artifact ---
+# We skip the MLflow model registry lookup here on purpose: the registry
+# stores an *absolute path* to the artifact recorded at training time
+# (e.g. C:/Users/.../mlruns/...), which breaks when the app is served from
+# a different machine or a Docker container. Loading model.joblib directly
+# avoids that path dependency entirely and is a common real-world pattern —
+# MLflow's registry is still useful for tracking/versioning, just not as
+# the runtime lookup every request depends on.
+model = load_model("models/model.joblib")
+print("Model loaded directly from models/model.joblib")
 
 # load the preprocessor
 preprocessor_path = "models/preprocessor.joblib"
